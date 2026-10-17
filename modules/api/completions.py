@@ -647,8 +647,14 @@ def chat_completions_common(body: dict, is_legacy: bool = False, stream=False, p
             chunk['usage'] = None
         yield chunk
 
-    generator = generate_chat_reply(
-        user_input, generate_params, regenerate=False, _continue=continue_, loading_message=False)
+    def _generate():
+        try:
+            yield from generate_chat_reply(
+                user_input, generate_params, regenerate=False, _continue=continue_, loading_message=False)
+        except ValueError as e:
+            raise InvalidRequestError(message=str(e) or "Invalid request", param='messages')
+
+    generator = _generate()
 
     answer = ''
     seen_content = ''

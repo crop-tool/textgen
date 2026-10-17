@@ -720,7 +720,12 @@ def generate_chat_prompt(user_input, state, **kwargs):
                 encoded_length = get_encoded_length(prompt)
                 if encoded_length > max_length:
                     logger.error(f"Failed to build the chat prompt. The input is too long for the available context length.\n\nTruncation length: {state['truncation_length']}\nmax_new_tokens: {state['max_new_tokens']} (is it too high?)\nAvailable context length: {max_length}\n")
-                    raise ValueError
+                    raise ValueError(
+                        f"The input is too long for the available context length: even with the user message truncated, "
+                        f"the prompt needs {encoded_length} tokens but only {max_length} are available "
+                        f"(truncation_length={state['truncation_length']}, max_new_tokens={state['max_new_tokens']}). "
+                        f"Shorten the conversation or lower max_new_tokens."
+                    )
                 else:
                     # Calculate token counts for the log message
                     original_user_tokens = get_encoded_length(user_message)
